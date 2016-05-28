@@ -5,9 +5,14 @@ import requests
 import sys
 import re
 import os
-from HTMLParser import HTMLParser
-from urllib2 import quote
 from builtins import input
+from lxml import etree
+from lxml.html import soupparser
+
+try:
+    from urllib.request import quote
+except ImportError:
+    from urllib2 import quote
 try:
     from colorama import init, Fore
     init()
@@ -44,17 +49,12 @@ def main():
 
     for pod in re.findall(r'<pod.+?>.+?</pod>', resp.text, re.S):
         title = re.findall(r'<pod.+?title=[\'"](.+?)[\'"].*>', pod, re.S)
-        parser = HTMLParser()
+        parser = soupparser
         title = parser.unescape("".join(title).strip())
-        print(Fore.GREEN + title + Fore.RESET).encode(
-            sys.stdout.encoding, 'replace'
-        )
+        print(Fore.GREEN + title + Fore.RESET)
 
         for inner in re.findall(r'<plaintext>(.*?)</plaintext>', pod, re.S):
-            print(parser.unescape(inner.strip()).encode(
-                sys.stdout.encoding, 'replace')
-            )
-
+            print(parser.unescape(inner.strip()))
         print('')
 
 if __name__ == '__main__':
