@@ -45,7 +45,10 @@ def sendQuery(query):
 
 
 def content(tag):
-    return tag.text + ''.join(etree.tostring(e, encoding=str) for e in tag)
+    if tag.text is not None:
+        return tag.text + ''.join(etree.tostring(e, encoding=str) for e in tag)
+    else:
+        return ''
 
 
 def output(query):
@@ -67,7 +70,8 @@ def output(query):
 
         out.append('\n'.join(sub_out))
 
-    return '\n\n'.join(out) + '\n'
+    url = '(http://www.wolframalpha.com/input/?i=' + quote(query) + ')'
+    return '\n\n'.join(out) + '\n' + url + '\n'
 
 
 @click.command()
