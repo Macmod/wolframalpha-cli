@@ -3,4 +3,4 @@
  - Ditch regexes where they aren't needed
  - Write decent README.md
  - Add help
-
+ - Make it work as a REPL (wa => REPL, wa -q "str" => standalone query)
