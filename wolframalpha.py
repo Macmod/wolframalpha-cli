@@ -34,28 +34,40 @@ Get one at https://developer.wolframalpha.com/portal/apisignup.html""")
 __version__ = '0.3'
 
 
-def main():
-    if len(sys.argv) > 1:
-        query = " ".join(sys.argv[1:])
-    else:
-        query = input('Enter query: ')
-
+def sendQuery(query):
     url = u'http://api.wolframalpha.com/v2/query?input={q}'\
           '&appid={API_KEY}&format=plaintext'.format(
             API_KEY=wolfram_alpha_key, q=quote(query)
           )
 
-    resp = requests.get(url)
+    return requests.get(url)
+
+
+def output(query):
+    resp = sendQuery(query)
+    out = ''
 
     for pod in re.findall(r'<pod.+?>.+?</pod>', resp.text, re.S):
         title = re.findall(r'<pod.+?title=[\'"](.+?)[\'"].*>', pod, re.S)
         parser = soupparser
         title = parser.unescape("".join(title).strip())
-        print(Fore.GREEN + title + Fore.RESET)
+        out += Fore.GREEN + title + Fore.RESET + '\n'
 
-        for inner in re.findall(r'<plaintext>(.*?)</plaintext>', pod, re.S):
-            print(parser.unescape(inner.strip()))
-        print('')
+        for inner in re.findall(
+                r'<plaintext>(.*?)</plaintext>', pod, re.S):
+            out += parser.unescape(inner.strip()) + '\n\n'
+
+    return out + '\n'
+
+
+def main():
+    if len(sys.argv) > 1:
+        query = " ".join(sys.argv[1:])
+        print(output(query))
+    else:
+        while 1:
+            query = input('>> ')
+            print(output(query))
 
 if __name__ == '__main__':
     main()
