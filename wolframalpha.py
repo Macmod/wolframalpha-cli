@@ -64,6 +64,7 @@ def output(query):
 
     return out + '\n'
 
+
 @click.command()
 @click.option('-q', help='Perform standalone query.')
 def main(q):
