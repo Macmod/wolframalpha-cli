@@ -3,7 +3,6 @@
 
 import requests
 import sys
-import re
 import os
 import click
 import readline
@@ -20,8 +19,8 @@ try:
     init()
 except Exception as e:
     class Fore():
-        GREEN = "** "
-        RESET = " **"
+        GREEN = '** '
+        RESET = ' **'
 try:
     with open(os.path.expanduser("~/.wolfram_key"), "r") as _file:
         wolfram_alpha_key = "".join(_file.readlines())
@@ -47,22 +46,23 @@ def sendQuery(query):
 
 def output(query):
     resp = sendQuery(query)
-    out = ''
+    root = etree.fromstring(resp.content)
+    out = []
 
-    for pod in re.findall(r'<pod.+?>.+?</pod>', resp.text, re.S):
-        title = re.findall(r'<pod.+?title=[\'"](.+?)[\'"].*>', pod, re.S)
+    for pod in root.iterfind('.//pod'):
+        title = pod.get('title')
         parser = soupparser
-        title = parser.unescape("".join(title).strip())
-        out += Fore.GREEN + title + Fore.RESET + '\n'
 
-        for inner in re.findall(
-                r'<plaintext>(.*?)</plaintext>', pod, re.S):
-            contents = parser.unescape(inner.strip())
+        sub_out = [Fore.GREEN + title + Fore.RESET]
+        for inner in pod.iterfind('.//plaintext'):
+            podstr = etree.tostring(inner, pretty_print=True, encoding=str)
+            clean_podstr = parser.unescape(podstr.strip())
+            if clean_podstr:
+                sub_out.append(clean_podstr)
 
-            if contents:
-                out += parser.unescape(inner.strip()) + '\n\n'
+        out.append('\n'.join(sub_out))
 
-    return out + '\n'
+    return '\n\n'.join(out) + '\n'
 
 
 @click.command()
