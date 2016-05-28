@@ -5,6 +5,7 @@ import requests
 import sys
 import re
 import os
+import click
 from builtins import input
 from lxml import etree
 from lxml.html import soupparser
@@ -59,11 +60,12 @@ def output(query):
 
     return out + '\n'
 
-
-def main():
+@click.command()
+@click.option('-q', help='Perform standalone query.')
+def main(q):
+    """Simple command-line interface to run queries on WolframAlpha"""
     if len(sys.argv) > 1:
-        query = " ".join(sys.argv[1:])
-        print(output(query))
+        print(output(q))
     else:
         while 1:
             query = input('>> ')
