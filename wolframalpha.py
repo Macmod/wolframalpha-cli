@@ -6,6 +6,7 @@ import sys
 import re
 import os
 import click
+import readline
 from builtins import input
 from lxml import etree
 from lxml.html import soupparser
@@ -56,14 +57,17 @@ def output(query):
 
         for inner in re.findall(
                 r'<plaintext>(.*?)</plaintext>', pod, re.S):
-            out += parser.unescape(inner.strip()) + '\n\n'
+            contents = parser.unescape(inner.strip())
+
+            if contents:
+                out += parser.unescape(inner.strip()) + '\n\n'
 
     return out + '\n'
 
 @click.command()
 @click.option('-q', help='Perform standalone query.')
 def main(q):
-    """Simple command-line interface to run queries on WolframAlpha"""
+    """Simple command-line interface to run queries on WolframAlpha."""
     if len(sys.argv) > 1:
         print(output(q))
     else:
