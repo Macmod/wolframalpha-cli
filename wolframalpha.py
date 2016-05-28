@@ -44,6 +44,10 @@ def sendQuery(query):
     return requests.get(url)
 
 
+def content(tag):
+    return tag.text + ''.join(etree.tostring(e, encoding=str) for e in tag)
+
+
 def output(query):
     resp = sendQuery(query)
     root = etree.fromstring(resp.content)
@@ -55,7 +59,8 @@ def output(query):
 
         sub_out = [Fore.GREEN + title + Fore.RESET]
         for inner in pod.iterfind('.//plaintext'):
-            podstr = etree.tostring(inner, pretty_print=True, encoding=str)
+            podstr = content(inner)
+
             clean_podstr = parser.unescape(podstr.strip())
             if clean_podstr:
                 sub_out.append(clean_podstr)
