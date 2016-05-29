@@ -19,6 +19,7 @@ try:
     init()
 except Exception as e:
     class Fore():
+        BLUE = '** '
         GREEN = '** '
         RESET = ' **'
 
@@ -42,11 +43,16 @@ def sendQuery(query):
             API_KEY=wolfram_alpha_key, q=quote(query)
           )
 
-    return requests.get(url)
+    try:
+        resp = requests.get(url)
+    except Exception as e:
+        resp = repr(e)
+
+    return resp
 
 
 def content(tag):
-    if tag.text is not None:
+    if tag is not None and tag.text is not None:
         return tag.text + ''.join(etree.tostring(e, encoding=str) for e in tag)
     else:
         return ''
@@ -61,23 +67,23 @@ def output(query):
         title = pod.get('title')
         colored_title = Fore.GREEN + title + Fore.RESET
 
-        sub_out = [colored_title]
-        for subpod in pod.iterfind('.//subpod'):
-            subtitle = subpod.get('title')
-            colored_subtitle = Fore.BLUE + subtitle + Fore.RESET
+        subpods = pod.findall('.//subpod')
+        if len(subpods) >= 1:
+            sub_out = [colored_title]
+            for subpod in subpods:
+                subtitle = subpod.get('title', '')
+                colored_subtitle = Fore.BLUE + subtitle + Fore.RESET
+                plaintext = content(subpod.find('plaintext'))
 
-            if subtitle:
-                podstr = colored_subtitle + '\n'
-            else:
-                podstr = ''
+                if plaintext:
+                    podstr = colored_subtitle + '\n' if subtitle else ''
+                    podstr += plaintext
 
-            podstr += content(subpod.find('plaintext'))
+                    clean_podstr = soupparser.unescape(podstr.strip())
+                    sub_out.append(clean_podstr)
 
-            clean_podstr = soupparser.unescape(podstr.strip())
-            if clean_podstr:
-                sub_out.append(clean_podstr)
-
-        out.append('\n'.join(sub_out))
+            if len(sub_out) > 1:
+                out.append('\n'.join(sub_out))
 
     url = '(http://www.wolframalpha.com/input/?i=' + quote(query) + ')'
     return '\n\n'.join(out) + '\n' + url + '\n'
