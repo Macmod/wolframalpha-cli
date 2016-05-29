@@ -21,6 +21,7 @@ except Exception as e:
     class Fore():
         GREEN = '** '
         RESET = ' **'
+
 try:
     with open(os.path.expanduser("~/.wolfram_key"), "r") as _file:
         wolfram_alpha_key = "".join(_file.readlines())
@@ -58,13 +59,21 @@ def output(query):
 
     for pod in root.iterfind('.//pod'):
         title = pod.get('title')
-        parser = soupparser
+        colored_title = Fore.GREEN + title + Fore.RESET
 
-        sub_out = [Fore.GREEN + title + Fore.RESET]
-        for inner in pod.iterfind('.//plaintext'):
-            podstr = content(inner)
+        sub_out = [colored_title]
+        for subpod in pod.iterfind('.//subpod'):
+            subtitle = subpod.get('title')
+            colored_subtitle = Fore.BLUE + subtitle + Fore.RESET
 
-            clean_podstr = parser.unescape(podstr.strip())
+            if subtitle:
+                podstr = colored_subtitle + '\n'
+            else:
+                podstr = ''
+
+            podstr += content(subpod.find('plaintext'))
+
+            clean_podstr = soupparser.unescape(podstr.strip())
             if clean_podstr:
                 sub_out.append(clean_podstr)
 

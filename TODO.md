@@ -1,6 +1,5 @@
  - Elaborate project structure
  - Write decent README.md
  - Improve output:
-    - Show subpods
     - Check whether some responses can be better formatted
  - Check compatibility with Python 2.*
