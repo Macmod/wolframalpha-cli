@@ -91,11 +91,6 @@ class WolframCli:
                 podstr = ''
                 subtitle = subpod.get('title', '')
                 plaintext = content(subpod.find('plaintext'))
-                if self.fetch_pics:
-                    pics = subpod.findall('img')
-                    for pic in pics:
-                        pic_req = requests.get(pic.get('src'))
-                        Image.open(BytesIO(pic_req.content)).show()
 
                 if plaintext:
                     if subtitle:
@@ -104,6 +99,11 @@ class WolframCli:
 
                     clean_podstr = soupparser.unescape(podstr.strip())
                     sub_out.append(clean_podstr)
+                elif self.fetch_pics:
+                    pics = subpod.findall('img')
+                    for pic in pics:
+                        pic_req = requests.get(pic.get('src'))
+                        Image.open(BytesIO(pic_req.content)).show()
 
             return sub_out
         else:
