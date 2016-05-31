@@ -5,3 +5,4 @@ click
 lxml
 future
 beautifulsoup4
+pillow

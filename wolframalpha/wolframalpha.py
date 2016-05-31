@@ -5,12 +5,14 @@ import requests
 import click
 import yaml
 import readline
+from PIL import Image
 from os import path, environ
 from subprocess import call
 from builtins import input
 from lxml import etree
 from lxml.html import soupparser
 from colorama import init, Fore
+from io import BytesIO
 init()
 
 try:
@@ -46,16 +48,21 @@ def content(tag):
 
 
 class WolframCli:
-    def __init__(self, api_key, show_url, colors):
+    def __init__(self, api_key, fetch_pics, show_url, colors):
         self.api_key = api_key
+        self.fetch_pics = fetch_pics
         self.show_url = show_url
         self.fore = _Fore(colors)
 
     def send_query(self, query):
-        url = u'http://api.wolframalpha.com/v2/query?input={q}'\
-              '&appid={API_KEY}&format=plaintext'.format(
-                API_KEY=self.api_key, q=quote(query)
-              )
+        raw_url = u'http://api.wolframalpha.com/v2/query?input={q}'\
+                  '&appid={API_KEY}'.format(
+                    API_KEY=self.api_key, q=quote(query)
+                  )
+
+        url = raw_url
+        if not self.fetch_pics:
+            url += u'&format=plaintext'
 
         resp = requests.get(url)
         return resp
@@ -81,11 +88,16 @@ class WolframCli:
         sub_out = []
         if len(subpods) >= 1:
             for subpod in subpods:
+                podstr = ''
                 subtitle = subpod.get('title', '')
                 plaintext = content(subpod.find('plaintext'))
+                if self.fetch_pics:
+                    pics = subpod.findall('img')
+                    for pic in pics:
+                        pic_req = requests.get(pic.get('src'))
+                        Image.open(BytesIO(pic_req.content)).show()
 
                 if plaintext:
-                    podstr = ''
                     if subtitle:
                         podstr = self.fore.subpod(subtitle) + '\n'
                     podstr += plaintext
@@ -152,6 +164,7 @@ def main(mode, q):
 
     wc = WolframCli(
         config['api_key'],
+        config['fetch_pics'],
         config['show_url'],
         config['colors']
     )
