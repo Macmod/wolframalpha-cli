@@ -1,0 +1,3 @@
+api_key:
+colors: {pod: GREEN, subpod: BLUE}
+show_url: true
