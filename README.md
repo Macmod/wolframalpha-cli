@@ -12,7 +12,7 @@ Be aware you need ~/.local/bin/ in your $PATH to run locally installed pip packa
 # Configuration
 In order to run WolframAlpha CLI you'll need an API key:
 
-1. Go to [WolframAlpha's Developer Portal]([https://developer.wolframalpha.com/portal/signup.html]) and sign up
+1. Go to [WolframAlpha's Developer Portal](https://developer.wolframalpha.com/portal/signup.html) and sign up
 
 2. Log in, proceed to [My Apps](http://developer.wolframalpha.com/portal/myapps/) and click "Get an AppID"
 
