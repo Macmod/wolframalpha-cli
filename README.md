@@ -16,7 +16,7 @@ In order to run WolframAlpha CLI you'll need an API key:
 
 2. Log in, proceed to [My Apps](http://developer.wolframalpha.com/portal/myapps/) and click "Get an AppID"
 
-3. Go back to your terminal, run ````wa-cli --config```` and paste your AppID in the *api_key* field.
+3. Run ````wa-cli --set-key KEY```` with your key
 
 # Usage
 To enter the REPL just run ````wa-cli````.

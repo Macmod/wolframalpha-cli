@@ -105,7 +105,7 @@ class WolframCli:
                         pic_req = requests.get(pic.get('src'))
                         Image.open(BytesIO(pic_req.content)).show()
 
-            return sub_out
+            return sub_out if sub_out else None
         else:
             return None
 
@@ -135,11 +135,12 @@ class WolframCli:
 
 @click.command()
 @click.option('-q', help='Perform a single query.')
+@click.option('--set-key', help='Set API key.')
 @click.option('--repl', 'mode', flag_value='repl',
               default=True, help='Read, eval, print, loop mode.')
 @click.option('--config', 'mode', flag_value='config',
               help='Open config file.')
-def main(mode, q):
+def main(mode, q, set_key):
     """Simple command-line interface to run queries on WolframAlpha."""
     config_path = path.join(
         path.dirname(path.abspath(__file__)),
@@ -148,35 +149,53 @@ def main(mode, q):
 
     config_file = None
     try:
-        config_file = open(config_path, 'r+')
+        config_file = open(config_path, 'r')
         config = yaml.safe_load(config_file)
-        if not config['api_key']:
-            print('It seems you don\'t have an API key yet.\nGet one at '
-                  'https://developer.wolframalpha.com/portal/apisignup.html')
-            config['api_key'] = input('WolframAlpha API Key: ')
-
-            config_file.seek(0)
-            config_file.write(yaml.dump(config, indent=4))
-            config_file.truncate()
     finally:
         if config_file is not None:
             config_file.close()
 
-    wc = WolframCli(
-        config['api_key'],
-        config['fetch_pics'],
-        config['show_url'],
-        config['colors']
-    )
+    if set_key:
+        key_path = path.expanduser(config['key_path'])
+        key_file = open(key_path, 'w')
 
-    if q:
-        print(wc.output(q))
-    elif mode == 'repl':
-        while 1:
-            query = input('>> ')
-            print(wc.output(query))
+        key_file.write(set_key)
+        key_file.truncate()
     elif mode == 'config':
         call([environ.get('EDITOR', 'vim'), config_path])
+    else:
+        key_file = None
+        try:
+            key_path = path.expanduser(config['key_path'])
+            if not path.isfile(key_path):
+                key_file = open(key_path, 'w')
+                print('It seems you don\'t have an API key yet.')
+                print('Get one at '
+                      'https://developer.wolframalpha.com/portal/apisignup.html')
+                api_key = input('WolframAlpha API Key: ')
+
+                key_file.write(api_key)
+                key_file.truncate()
+            else:
+                key_file = open(key_path, 'r')
+                api_key = key_file.readline()
+        finally:
+            if key_file is not None:
+                key_file.close()
+
+        wc = WolframCli(
+            api_key,
+            config['fetch_pics'],
+            config['show_url'],
+            config['colors']
+        )
+
+        if q:
+            print(wc.output(q))
+        elif mode == 'repl':
+            while 1:
+                query = input('>> ')
+                print(wc.output(query))
 
 if __name__ == '__main__':
     main()

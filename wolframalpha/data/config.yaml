@@ -1,4 +1,4 @@
-api_key:
+key_path: ~/.wolfram_key
 colors: {pod: GREEN, subpod: BLUE}
 fetch_pics: false
 show_url: true
