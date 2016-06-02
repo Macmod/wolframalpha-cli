@@ -23,6 +23,8 @@ In case you want to check other options, run ````wa-cli --config```` to edit the
 # Usage
 To enter the REPL just run ````wa-cli````.
 
+Once inside the REPL, some responses may provide pictures. To open all pictures at once, type ````:allpics````.
+
 In case you prefer single queries, use the -q option:
 
     wa-cli -q "Your query"
