@@ -137,6 +137,8 @@ class WolframCli:
             return None
 
     def parse_etree(self, root):
+        self.last_pics = []
+
         out = []
         success = root.get('success')
 
