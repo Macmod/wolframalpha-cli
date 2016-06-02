@@ -18,6 +18,8 @@ In order to run WolframAlpha CLI you'll need an API key:
 
 3. Run ````wa-cli --set-key KEY```` with your key
 
+In case you want to check other options, run ````wa-cli --config```` to edit the config file.
+
 # Usage
 To enter the REPL just run ````wa-cli````.
 
