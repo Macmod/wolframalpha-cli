@@ -2,4 +2,3 @@
  - Improve output:
     - Check whether some responses can be better formatted
  - Check compatibility with Python 2.*
- - Organize code

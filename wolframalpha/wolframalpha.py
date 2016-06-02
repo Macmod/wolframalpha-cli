@@ -4,7 +4,7 @@
 import requests
 import click
 import yaml
-import readline
+import readline  # NOQA
 from PIL import Image
 from os import path, environ
 from subprocess import call
@@ -53,6 +53,7 @@ class WolframCli:
         self.fetch_pics = fetch_pics
         self.show_url = show_url
         self.fore = _Fore(colors)
+        self.last_pics = []
 
     def send_query(self, query):
         raw_url = u'http://api.wolframalpha.com/v2/query?input={q}'\
@@ -67,6 +68,10 @@ class WolframCli:
         resp = requests.get(url)
         return resp
 
+    def show_picture(self, pic):
+        pic_req = requests.get(pic.get('src'))
+        Image.open(BytesIO(pic_req.content)).show()
+
     def output(self, query):
         if self.show_url:
             wolfram = 'http://www.wolframalpha.com/input/?i='
@@ -74,14 +79,36 @@ class WolframCli:
         else:
             url = ''
 
-        try:
-            resp = self.send_query(query)
-            root = etree.fromstring(resp.content)
-            out = self.parse_etree(root)
+        if query.startswith(':'):
+            cmd = query.split(' ')
+            if cmd[0] == ':p':
+                if cmd[1].isdigit():
+                    fp = int(cmd[1])
+                    if fp > 0 and fp <= len(self.last_pics):
+                        pic = self.last_pics[fp-1]
+                        self.show_picture(pic)
 
-            return '\n\n'.join(out) + url + '\n'
-        except Exception as e:
-            return repr(e)
+                        return 'Done.'
+                    else:
+                        return 'Invalid picture.'
+                else:
+                    return 'NaN.'
+            elif cmd[0] == ':allpics':
+                for pic in self.last_pics:
+                    self.show_picture(pic)
+
+                return 'Done.'
+            else:
+                return 'Unknown command.'
+        else:
+            try:
+                resp = self.send_query(query)
+                root = etree.fromstring(resp.content)
+                out = self.parse_etree(root)
+
+                return '\n\n'.join(out) + url
+            except Exception as e:
+                return repr(e)
 
     def parse_subpods(self, pod):
         subpods = pod.findall('.//subpod')
@@ -101,9 +128,9 @@ class WolframCli:
                     sub_out.append(clean_podstr)
                 elif self.fetch_pics:
                     pics = subpod.findall('img')
-                    for pic in pics:
-                        pic_req = requests.get(pic.get('src'))
-                        Image.open(BytesIO(pic_req.content)).show()
+                    self.last_pics += pics
+                    sub_out.append('(Type :p ' + str(len(self.last_pics)) +
+                                   ' to see picture)')
 
             return sub_out if sub_out else None
         else:
@@ -170,8 +197,8 @@ def main(mode, q, set_key):
             if not path.isfile(key_path):
                 key_file = open(key_path, 'w')
                 print('It seems you don\'t have an API key yet.')
-                print('Get one at '
-                      'https://developer.wolframalpha.com/portal/apisignup.html')
+                print('Get one at https://'
+                      'developer.wolframalpha.com/portal/apisignup.html')
                 api_key = input('WolframAlpha API Key: ')
 
                 key_file.write(api_key)
@@ -191,11 +218,11 @@ def main(mode, q, set_key):
         )
 
         if q:
-            print(wc.output(q))
+            print(wc.output(q) + '\n')
         elif mode == 'repl':
             while 1:
                 query = input('>> ')
-                print(wc.output(query))
+                print(wc.output(query) + '\n')
 
 if __name__ == '__main__':
     main()

@@ -1,8 +1,9 @@
+beautifulsoup4==4.4.1
+click==6.6
 colorama==0.3.1
+future==0.15.2
+lxml==3.6.0
+Pillow==3.2.0
+PyYAML==3.11
 requests==2.3.0
-pyyaml
-click
-lxml
-future
-beautifulsoup4
-pillow
+wheel==0.26.0
