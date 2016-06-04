@@ -25,6 +25,8 @@ To enter the REPL just run ````wa-cli````.
 
 Once inside the REPL, some responses may provide pictures. To open all pictures at once, type ````:allpics````.
 
+You can also run ````:open```` to open the last query in your browser.
+
 In case you prefer single queries, use the -q option:
 
     wa-cli -q "Your query"

@@ -5,6 +5,7 @@ import requests
 import click
 import yaml
 import readline  # NOQA
+import webbrowser
 from PIL import Image
 from os import path, environ
 from subprocess import call
@@ -54,6 +55,7 @@ class WolframCli:
         self.show_url = show_url
         self.fore = _Fore(colors)
         self.last_pics = []
+        self.last_url = ''
 
     def send_query(self, query):
         raw_url = u'http://api.wolframalpha.com/v2/query?input={q}'\
@@ -73,12 +75,6 @@ class WolframCli:
         Image.open(BytesIO(pic_req.content)).show()
 
     def output(self, query):
-        if self.show_url:
-            wolfram = 'http://www.wolframalpha.com/input/?i='
-            url = '\n(' + wolfram + quote(query) + ')'
-        else:
-            url = ''
-
         if query.startswith(':'):
             cmd = query.split(' ')
             if cmd[0] == ':p':
@@ -98,15 +94,25 @@ class WolframCli:
                     self.show_picture(pic)
 
                 return 'Done.'
+            elif cmd[0] == ':open':
+                if self.last_url:
+                    webbrowser.open(self.last_url)
+                    return 'Done.'
+                else:
+                    return 'You haven\'t run any queries.'
             else:
                 return 'Unknown command.'
         else:
+            url = 'http://www.wolframalpha.com/input/?i=' + quote(query)
+            url_str = '\n(' + url + ')' if self.show_url else ''
+
+            self.last_url = url
             try:
                 resp = self.send_query(query)
                 root = etree.fromstring(resp.content)
                 out = self.parse_etree(root)
 
-                return '\n\n'.join(out) + url
+                return '\n\n'.join(out) + url_str
             except Exception as e:
                 return repr(e)
 
