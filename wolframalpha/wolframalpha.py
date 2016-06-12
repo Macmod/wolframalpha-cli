@@ -60,7 +60,7 @@ class WolframCli:
     def send_query(self, query):
         raw_url = u'http://api.wolframalpha.com/v2/query?input={q}'\
                   '&appid={API_KEY}'.format(
-                    API_KEY=self.api_key, q=quote(query)
+                      API_KEY=self.api_key, q=quote(query)
                   )
 
         url = raw_url
@@ -70,38 +70,51 @@ class WolframCli:
         resp = requests.get(url)
         return resp
 
-    def show_picture(self, pic):
+    def open_picture_elem(self, pic):
         pic_req = requests.get(pic.get('src'))
         Image.open(BytesIO(pic_req.content)).show()
+
+    def show_all_pics(self):
+        for pic in self.last_pics:
+            self.open_picture_elem(pic)
+
+    def show_picture(self, n):
+        if n > 0 and n <= len(self.last_pics):
+            pic = self.last_pics[n - 1]
+            self.open_picture_elem(pic)
+
+            return True
+        else:
+            return False
+
+    def handle_command(self, cmd):
+        if cmd[0] == ':p':
+            if cmd[1].isdigit():
+                fp = int(cmd[1])
+                if self.show_picture(fp):
+                    return 'Done.'
+                else:
+                    return 'Invalid picture.'
+            else:
+                return 'NaN.'
+        elif cmd[0] == ':allpics':
+            self.show_all_pics()
+            return 'Done.'
+        elif cmd[0] == ':open':
+            if self.last_url:
+                webbrowser.open(self.last_url)
+                return 'Done.'
+            else:
+                return 'You haven\'t run any queries.'
+        elif cmd[0] == ':quit' or cmd[0] == ':q':
+            raise SystemExit
+        else:
+            return 'Unknown command.'
 
     def output(self, query):
         if query.startswith(':'):
             cmd = query.split(' ')
-            if cmd[0] == ':p':
-                if cmd[1].isdigit():
-                    fp = int(cmd[1])
-                    if fp > 0 and fp <= len(self.last_pics):
-                        pic = self.last_pics[fp-1]
-                        self.show_picture(pic)
-
-                        return 'Done.'
-                    else:
-                        return 'Invalid picture.'
-                else:
-                    return 'NaN.'
-            elif cmd[0] == ':allpics':
-                for pic in self.last_pics:
-                    self.show_picture(pic)
-
-                return 'Done.'
-            elif cmd[0] == ':open':
-                if self.last_url:
-                    webbrowser.open(self.last_url)
-                    return 'Done.'
-                else:
-                    return 'You haven\'t run any queries.'
-            else:
-                return 'Unknown command.'
+            return self.handle_command(cmd)
         else:
             url = 'http://www.wolframalpha.com/input/?i=' + quote(query)
             url_str = '\n(' + url + ')' if self.show_url else ''
